@@ -81,10 +81,15 @@ The nLingual class is a static class with a host of functions for getting and ma
 
 == Changelog ==
 
+= 1.1.0 =
+Added other_lang methods.
+
+The new features in this update are largely only useful for bilingual setups. Now in addition to the current_lang functions, you can use other_lang functions, which get or test using the language that isn't the current one (in multilingual setups, it's the first one in the languages list that isn't the current one).
+
 = 1.0.1 =
-Fixed associate_posts and added translation management to quickedit
-* Discovered an issue where associate_posts wasn't set to delete links when the post_id passed was -1 ("None" in the interface).
-* Also added translation management to the quick edit form.
+Fixed associate_posts and added translation management to quickedit.
+
+Discovered an issue where associate_posts wasn't set to delete links when the post_id passed was -1 ("None" in the interface). Also added translation management to the quick edit form.
 
 = 1.0 =
-* Initial public release.
+Initial public release.
