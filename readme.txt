@@ -3,7 +3,7 @@ Contributors: dougwollison
 Tags: language, bilingual, multilingual
 Requires at least: 3.5
 Tested up to: 3.6.1
-Stable tag: 1.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -80,6 +80,11 @@ The nLingual class is a static class with a host of functions for getting and ma
 4. Start assigning languages to posts and linking translations.
 
 == Changelog ==
+
+= 1.0.1 =
+Fixed associate_posts and added translation management to quickedit
+* Discovered an issue where associate_posts wasn't set to delete links when the post_id passed was -1 ("None" in the interface).
+* Also added translation management to the quick edit form.
 
 = 1.0 =
 * Initial public release.
