@@ -3,7 +3,7 @@ Contributors: dougwollison
 Tags: language, bilingual, multilingual
 Requires at least: 3.5
 Tested up to: 3.6.1
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -80,6 +80,11 @@ The nLingual class is a static class with a host of functions for getting and ma
 4. Start assigning languages to posts and linking translations.
 
 == Changelog ==
+
+= 1.1.1 =
+Added skip current language feature to lang_links (also minor commenting updates).
+
+The nL_lang_links function now offers a $skip_current argument (#4).
 
 = 1.1.0 =
 Added other_lang methods.
