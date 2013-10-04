@@ -1,4 +1,4 @@
-=== Plugin Name ===
+=== nLingual ===
 Contributors: dougwollison
 Tags: multilingual, multi, language, admin, bilingual, switcher, translation, nlingual
 Requires at least: 3.5
