@@ -81,6 +81,8 @@ The nLingual class is a static class with a host of functions for getting and ma
 
 == Changelog ==
 
+**Details on each release can be found [on the GitHub releases page](https://github.com/dougwollison/nlingual/releases) for this project.**
+
 = 1.1.3 =
 Fixed issue with metadata synchronization. Also added more commenting on PHP files.
 
@@ -95,12 +97,8 @@ The nL_lang_links function now offers a $skip_current argument (#4).
 = 1.1.0 =
 Added other_lang methods.
 
-The new features in this update are largely only useful for bilingual setups. Now in addition to the current_lang functions, you can use other_lang functions, which get or test using the language that isn't the current one (in multilingual setups, it's the first one in the languages list that isn't the current one).
-
 = 1.0.1 =
 Fixed associate_posts and added translation management to quickedit.
-
-Discovered an issue where associate_posts wasn't set to delete links when the post_id passed was -1 ("None" in the interface). Also added translation management to the quick edit form.
 
 = 1.0 =
 Initial public release.
