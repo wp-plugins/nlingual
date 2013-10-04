@@ -3,7 +3,7 @@ Contributors: dougwollison
 Tags: multilingual, multi, language, admin, bilingual, switcher, translation, nlingual
 Requires at least: 3.5
 Tested up to: 3.6.1
-Stable tag: 1.1.2
+Stable tag: 1.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -80,6 +80,9 @@ The nLingual class is a static class with a host of functions for getting and ma
 4. Start assigning languages to posts and linking translations.
 
 == Changelog ==
+
+= 1.1.3 =
+Fixed issue with metadata synchronization. Also added more commenting on PHP files.
 
 = 1.1.2 =
 Updated version number in main plugin file (was still at 1.0). Hehe, oops.
