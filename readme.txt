@@ -81,6 +81,9 @@ The nLingual class is a static class with a host of functions for getting and ma
 
 == Changelog ==
 
+= 1.1.2 =
+Updated version number in main plugin file (was still at 1.0). Hehe, oops.
+
 = 1.1.1 =
 Added skip current language feature to lang_links (also minor commenting updates).
 
