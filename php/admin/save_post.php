@@ -51,7 +51,7 @@ function nLingual_save_post($post_id){
 
 	// Loop through the sync options, and syncronize the fields with it's associated posts
 	$associated = nL_associated_posts($post_id);
-	
+
 	// Skip if no associated posts are found
 	if(!$associated) return;
 
@@ -88,9 +88,17 @@ function nLingual_save_post($post_id){
 	}
 	if($meta_fields = nL_sync_rules($post_type, 'meta')){
 		foreach($meta_fields as $field){
+			// Prepare $field for use in a LIKE comparision
+			// Escape _ for LIKE and % for wpdb::prepare()
+			$field = str_replace(array('_','%'), array('\_','%%'), $wpdb->_real_escape($field));
+
 			foreach($associated as $id){
 				// Delete all meta data for this field on this post
-				delete_post_meta($id, $field);
+				$wpdb->query($wpdb->prepare("
+					DELETE FROM $wpdb->postmeta
+					WHERE post_id = %d
+					AND meta_key LIKE '$field'
+				", $id));
 
 				// Now, insert the new meta for this field from the newly saved post
 				$wpdb->query($wpdb->prepare("
@@ -99,8 +107,8 @@ function nLingual_save_post($post_id){
 					SELECT %d, meta_key, meta_value
 					FROM $wpdb->postmeta
 					WHERE post_id = %d
-					AND meta_key = %s
-				", $id, $post_id, $field));
+					AND meta_key LIKE '$field'
+				", $id, $post_id));
 			}
 		}
 	}
@@ -182,7 +190,7 @@ function nLingual_bulk_edit(){
 	if(isset($_GET['bulk_edit'])
 	&& isset($_GET['nL_lang_nonce'])
 	&& $_GET['nL_language'] != '-1'
-	&& wp_verify_nonce($_GET['nL_lang_nonce'], 'nLingual_set_language')){
+	&& wp_verify_nonce($_GET['nL_lang_nonce'], 'nLingual_bulk_set_language')){
 		foreach((array) $_GET['post'] as $post_id){
 			nL_set_post_lang($post_id, $_GET['nL_language']);
 		}
