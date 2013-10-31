@@ -2,14 +2,16 @@
 Contributors: dougwollison
 Tags: multilingual, multi, language, admin, bilingual, switcher, translation, nlingual
 Requires at least: 3.5
-Tested up to: 3.6.1
-Stable tag: 1.1.3
+Tested up to: 3.7.x
+Stable tag: 1.2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 A simple but flexible multilingual system. Features custom langauge management, post data synchronization and theme/plugin development utilities.
 
 == Description ==
+
+**NOTICE: The function `nL_lang_links` is being depreciated; please use `nL_get_lang_links` or `nL_print_lang_links` instead. This function is still valid, but shall be removed entirely by version 1.5.0.**
 
 nLingual is a simple and flexible multilingual system for WordPress. It operates on a one language per post basis, allowing you to keep different languages separate, and for the custom fields and other metadata to be translated easily as well. It also comes with a host of general utilities that expand on the built-in localization functions. What's more, it gives you complete control over the languages the system uses, and allows for the synchronization of sister posts.
 
@@ -82,6 +84,21 @@ The nLingual class is a static class with a host of functions for getting and ma
 == Changelog ==
 
 **Details on each release can be found [on the GitHub releases page](https://github.com/dougwollison/nlingual/releases) for this project.**
+
+= 1.2.3 =
+Coding improvements and language table adjustments (props vianney).
+
+= 1.2.2 =
+Bug fix with languages table creation (props vianney)
+
+= 1.2.1 =
+Bug fixes and ACF compatability improvements.
+
+= 1.2.0 =
+Admin-only feature, numerous bug fixes, doc updates; a lot of stuff.
+
+= 1.1.4 =
+Fixed how uninstall.php deletes nLingual related options.
 
 = 1.1.3 =
 Fixed issue with metadata synchronization. Also added more commenting on PHP files.

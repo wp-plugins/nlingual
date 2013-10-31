@@ -4,15 +4,22 @@
 // ============================== //
 
 /**
- * Admin menu hook
- * Adds the Languages settings menu
+ * admin_menu action.
  *
+ * Adds the Languages settings menu.
+ *
+ * @since 1.2.0 Prefixed menu name if in admin_only mode.
  * @since 1.0.0
+ *
+ * @uses nL_admin_only()
  */
 function nLingual_options_menu(){
+	// Prefix both titles if in admin_only mode
+	$prefix = nL_admin_only() ? '[nLingual] ' : '';
+
 	add_options_page(
-		__('Language Settings', NL_TXTDMN),
-		__('Languages', NL_TXTDMN),
+		$prefix.__('Language Settings', NL_TXTDMN),
+		$prefix.__('Languages', NL_TXTDMN),
 		'manage_options',
 		'nLingual',
 		'nLingual_settings_page'
@@ -21,8 +28,9 @@ function nLingual_options_menu(){
 add_action('admin_menu', 'nLingual_options_menu');
 
 /**
- * Settings page callback
- * Prints out the settings page, printing the settings fields/sections
+ * nLingual settings page callback.
+ *
+ * Outputs the settings page, printing the settings fields/sections.
  *
  * @since 1.0.0
  */
@@ -44,10 +52,18 @@ function nLingual_settings_page(){
 }
 
 /**
- * Register settings for options page
+ * admin_init action.
  *
- * @since 1.1.3 Fixed processing of meta ruleset
+ * Register settings for options page.
+ *
+ * @since 1.2.0 Added admin_only mode option.
+ * @since 1.1.3 Fixed processing of meta ruleset.
  * @since 1.0.0
+ *
+ * @uses nL_get_option()
+ * @uses nL_default_lang()
+ * @uses nL_post_types()
+ * @uses nL_sync_rules()
  */
 function nLingual_register_settings(){
 	add_settings_section('nLingual-options', __('Options', NL_TXTDMN), 'nLingual_manage_options', 'nLingual');
@@ -55,29 +71,42 @@ function nLingual_register_settings(){
 	add_settings_section('nLingual-languages', __('Languages', NL_TXTDMN), 'nLingual_manage_languages', 'nLingual');
 
 	register_setting('nLingual', 'nLingual-options');
-	register_setting('nLingual', 'nLingual-sync_rules', function($data){
-		foreach($data as &$ruleset){
-			// Split the metadata rule into separate lines
-			$ruleset['meta'] = preg_split('/[\n\r]+/', $ruleset['meta']);
-			array_walk($ruleset['meta'], 'trim'); // Also run trim on each line
+	register_setting('nLingual', 'nLingual-sync_rules', 'nLingual_sanitize_sync_rules');
 
-			if(in_array('post_date', $ruleset['data'])) $ruleset['data'][] = 'post_date_gmt';
-			if(in_array('post_modified', $ruleset['data'])) $ruleset['data'][] = 'post_modified_gmt';
-		}
+	/**
+	 * Output the admin only mode checkbox.
+	 *
+	 * @since 1.2.0
+	 */
+	add_settings_field('admin_only', __('Admin only mode?', NL_TXTDMN), function(){
+		$bool = nL_get_option('admin_only');
 
-		return $data;
-	});
+		printf(
+			'<label><input id="admin_only" type="checkbox" name="nLingual-options[admin_only]" value="1" %s> %s</label>',
+			$bool ? 'checked' : '',
+			__('Should only the admin-related features be enabled?', NL_TXTDMN)
+		);
+		printf(
+			'<p class="description">%s</p>',
+			__('Use if you want to set up languages and translations, but don’t want language detection and redirection running yet.', NL_TXTDMN)
+		);
+	}, 'nLingual', 'nLingual-options');
 
+	/**
+	 * Output the redirection method radiolist and skip default localization checkbox.
+	 *
+	 * @since 1.0.0
+	 */
 	add_settings_field('redirection-method', __('Language redirection method', NL_TXTDMN), function(){
 		$compare = nL_get_option('method');
 		$options = array(
 			NL_REDIRECT_USING_DOMAIN	=> __('Subdomain (e.g. <code>%1$s.%2$s</code>)', NL_TXTDMN),
 			NL_REDIRECT_USING_PATH		=> __('Path prefix (e.g. <code>%2$s/%1$s/</code>)', NL_TXTDMN),
-			NL_REDIRECT_USING_ACCEPT	=> __('None, use visitors native language, if applicable', NL_TXTDMN)
+			NL_REDIRECT_USING_GET		=> __('HTTP GET variable (e.g. <code>%2$s/?lang=%1$s</code>)', NL_TXTDMN)
 		);
 
 		foreach($options as $value => $label){
-			$label = sprintf($label, nL_default_lang(), parse_url(get_bloginfo('home'), PHP_URL_HOST));
+			$label = sprintf($label, nL_default_lang(), parse_url(get_bloginfo('url'), PHP_URL_HOST));
 			printf(
 				'<label><input type="radio" name="nLingual-options[method]" value="%s" %s> %s</label><br/>',
 				$value,
@@ -91,10 +120,15 @@ function nLingual_register_settings(){
 		printf(
 			'<label><input id="skip_default_l10n" type="checkbox" name="nLingual-options[skip_default_l10n]" value="1" %s> %s</label>',
 			$bool ? 'checked' : '',
-			__('Do not use a subdomain or path prefix for the default language', NL_TXTDMN)
+			__('Do not use a subdomain or path prefix for the default language.', NL_TXTDMN)
 		);
 	}, 'nLingual', 'nLingual-options');
 
+	/**
+	 * Output the POST/GET var text fields.
+	 *
+	 * @since 1.0.0
+	 */
 	add_settings_field('request-vars', __('POST & GET variable names', NL_TXTDMN), function(){
 		$get = nL_get_option('get_var');
 		$post = nL_get_option('post_var');
@@ -113,6 +147,11 @@ function nLingual_register_settings(){
 		);
 	}, 'nLingual', 'nLingual-options');
 
+	/**
+	 * Output the supported post types checklist.
+	 *
+	 * @since 1.0.0
+	 */
 	add_settings_field('post_types', __('Supported post types', NL_TXTDMN), function(){
 		$post_types = nL_post_types();
 
@@ -129,6 +168,11 @@ function nLingual_register_settings(){
 		}
 	}, 'nLingual', 'nLingual-options');
 
+	/**
+	 * Output the language seperator text field.
+	 *
+	 * @since 1.0.0
+	 */
 	add_settings_field('split_separator', __('Split language separator', NL_TXTDMN), function(){
 		$separator = nL_get_option('separator');
 
@@ -145,6 +189,11 @@ function nLingual_register_settings(){
 		);
 	}, 'nLingual', 'nLingual-options');
 
+	/**
+	 * Output the localize date format checkbox.
+	 *
+	 * @since 1.0.0
+	 */
 	add_settings_field('l10n_dateformat', __('Localize date format?', NL_TXTDMN), function(){
 		$bool = nL_get_option('l10n_dateformat');
 
@@ -159,6 +208,11 @@ function nLingual_register_settings(){
 		);
 	}, 'nLingual', 'nLingual-options');
 
+	/**
+	 * Output the delete sister posts checkbox.
+	 *
+	 * @since 1.0.0
+	 */
 	add_settings_field('delete_sisters', __('Delete sister posts?', NL_TXTDMN), function(){
 		$bool = nL_get_option('delete_sisters');
 
@@ -169,10 +223,15 @@ function nLingual_register_settings(){
 		);
 	}, 'nLingual', 'nLingual-options');
 
+	/**
+	 * Output the erase translations action button.
+	 *
+	 * @since 1.0.0
+	 */
 	add_settings_field('erase_translations', __('Erase translation data?', NL_TXTDMN), function(){
 		$erase_url = admin_url(sprintf('?_nL_nonce=%s', wp_create_nonce('nLingual_erase_translations')));
 		printf(
-			'<label><a href="%s" id="erase_translations" class="button-primary">%s</a></label>',
+			'<label><a href="%s" id="erase_translations" class="button">%s</a></label>',
 			$erase_url,
 			__('Clear the translations table for this site?', NL_TXTDMN)
 		);
@@ -185,7 +244,15 @@ function nLingual_register_settings(){
 	// Add Syncornization Rule managers for each post type
 	foreach(nL_post_types() as $post_type){
 		$post_type = get_post_type_object($post_type);
-		add_settings_field($post_type->name.'-sync_rules', $post_type->labels->name, function() use ($post_type, $sync_rules){
+
+		/**
+		 * Print out the sync_rules manager for the current post type.
+		 *
+		 * @since 1.0.0
+		 *
+		 * @uses $post_type  The current post type object.
+		 */
+		add_settings_field($post_type->name.'-sync_rules', $post_type->labels->name, function() use ($post_type){
 			$pt = $post_type->name;
 			$sync_data_rules = nL_sync_rules($pt, 'data');
 			printf(
@@ -248,8 +315,36 @@ function nLingual_register_settings(){
 add_action('admin_init', 'nLingual_register_settings');
 
 /**
- * Options settings section callback
- * Simply prints out the individual fields
+ * nLingual-sync_rules sanitize callback.
+ *
+ * Splits the meta list into an array, adds GMT versions of post_date/modified if set.
+ *
+ * @since 1.2.0 Moved to external function, skips if not an array.
+ * @since 1.0.0
+ *
+ * @param array $data The value of $_POST['nLingual-sync_rules'].
+ *
+ * @return array The santizied option data.
+ */
+function nLingual_sanitize_sync_rules($data){
+	if(!is_array($data)) return $data;
+
+	foreach($data as &$ruleset){
+		// Split the metadata rule into separate lines
+		$ruleset['meta'] = preg_split('/[\n\r]+/', $ruleset['meta']);
+		array_walk($ruleset['meta'], 'trim'); // Also run trim on each line
+
+		if(in_array('post_date', $ruleset['data'])) $ruleset['data'][] = 'post_date_gmt';
+		if(in_array('post_modified', $ruleset['data'])) $ruleset['data'][] = 'post_modified_gmt';
+	}
+
+	return $data;
+}
+
+/**
+ * nLingual-options settings section callback.
+ *
+ * Simply prints out the individual fields.
  *
  * @since 1.0.0
  */
@@ -258,21 +353,27 @@ function nLingual_manage_options(){
 }
 
 /**
- * Sync settings section callback
- * Simply prints out the individual fields
+ * nLingual-sync settings section callback.
+ *
+ * Simply prints out the individual fields.
  *
  * @since 1.0.0
  */
 function nLingual_manage_sync(){
-	do_settings_fields('nLingual', 'sync');
+	do_settings_fields('nLingual', 'sync_rules');
 }
 
 /**
- * Languages settings section callback
+ * nLingual-languages settings section callback.
+ *
  * Prints out the interface for managing languages,
  * including the currently registered ones.
  *
+ * @since 1.2.0 Added active column.
  * @since 1.0.0
+ *
+ * @uses nL_languages()
+ * @uses _nLingual_language_editor()
  */
 function nLingual_manage_languages(){
 	global $nLingual_preset_languages;
@@ -291,6 +392,7 @@ function nLingual_manage_languages(){
 		<thead>
 			<tr>
 				<th class="language-default">Default?</th>
+				<th class="language-active" title="<?php _e('Should this language be active on the front-end?', NL_TXTDMN)?>">Active?</th>
 				<th class="language-system_name">System Name</th>
 				<th class="language-native_name">Native Name</th>
 				<th class="language-short_name" title="<?php _e('A shorthand name for the language.', NL_TXTDMN)?>">Short Name</th>
@@ -313,18 +415,22 @@ function nLingual_manage_languages(){
 	<?php
 }
 
-
 /**
  * Prints out a row for the languages editor table
  * (including the blank one for the javascript template)
  *
+ * @since 1.2.0 Added active column.
  * @since 1.0.0
+ *
+ * @uses nL_get_option()
+ * @used-by nLingual_manage_languages()
  */
 function _nLingual_language_editor($language = array()){
 	$language = array_map('esc_textarea', $language);
 
 	extract(array_merge(array(
 		'lang_id'=>'-1',
+		'active'=>1,
 		'system_name'=>'',
 		'native_name'=>'',
 		'short_name'=>'',
@@ -340,6 +446,9 @@ function _nLingual_language_editor($language = array()){
 		<td class="language-default">
 			<input type="radio" name="nLingual-options[default_lang]" value="<?php echo $lang_id?>" <?php if($lang_id && $default == $lang_id) echo 'checked'?>>
 			<input type="hidden" name="nLingual-languages[<?php echo $lang_id?>][list_order]" value="<?php echo $list_order?>" class="list_order">
+		</td>
+		<td class="language-active" title="<?php _e('Should this language be active on the front-end?', NL_TXTDMN)?>">
+			<input type="checkbox" name="nLingual-languages[<?php echo $lang_id?>][active]" value="1" <?php if($active) echo 'checked'?>>
 		</td>
 		<td class="language-system_name">
 			<input type="text" name="nLingual-languages[<?php echo $lang_id?>][system_name]" value="<?php echo $system_name?>">
