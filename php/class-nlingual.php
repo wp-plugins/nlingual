@@ -343,7 +343,7 @@ class nLingual{
 
 		if ( is_admin() ) {
 			// Create the languages table
-			PluginToolkit::makeTable(
+			Plugin_Toolkit::makeTable(
 				$wpdb->nL_languages,
 				array(
 					'columns' => array(
@@ -365,7 +365,7 @@ class nLingual{
 			);
 
 			// Create the translations table
-			PluginToolkit::makeTable(
+			Plugin_Toolkit::makeTable(
 				$wpdb->nL_translations,
 				array(
 					'columns' => array(
@@ -1664,6 +1664,7 @@ class nLingual{
 	/**
 	 * Return the current URL, translated for the provided language.
 	 *
+	 * @sicne 1.2.5 Added use of $lang to hooks.
 	 * @since 1.0.0
 	 *
 	 * @uses nLingual::_lang()
@@ -1713,7 +1714,7 @@ class nLingual{
 			break;
 		default: // Just localize the URI
 			$url = self::localize_url( $uri, $lang, true );
-			$url = apply_filters( 'nLingual_localize_here', $url );
+			$url = apply_filters( 'nLingual_localize_here', $url, $lang );
 			return $url;
 		}
 
@@ -1732,7 +1733,7 @@ class nLingual{
 		}
 
 		// Apply any filters
-		$url_data = apply_filters( 'nLingual_localize_here_array', $url_data );
+		$url_data = apply_filters( 'nLingual_localize_here_array', $url_data, $lang );
 
 		// Build the URL
 		$url = self::build_url( $url_data );

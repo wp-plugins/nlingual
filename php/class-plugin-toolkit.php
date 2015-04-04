@@ -1,10 +1,10 @@
 <?php
 /**
- * PluginToolkit class
+ * Plugin_Toolkit class
  *
  * Base class for use by plugin API classes.
  */
-abstract class PluginToolkit {
+abstract class Plugin_Toolkit {
 	/**
 	 * Create a table if it doesn't already exist, and additionally
 	 * add any columns that don't yet exist.
